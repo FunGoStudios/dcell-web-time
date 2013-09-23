@@ -1,32 +1,33 @@
 require 'rack'
+require 'yaml'
 
-def usage
-  puts 'actor-node <ID> <ADDR> <CLUSTER-ID> <CLUSTER-ADDR>'
-end
-
-if ARGV.size != 4
-  usage
+begin
+  DCELL = YAML.load_file('dcell.yml')
+rescue
+  puts 'DCell configuration required, see dcell.example.yml'
   exit 1
 end
 
 require 'dcell'
-
-id = ARGV[0]
-addr = ARGV[1]
-cluster_id = ARGV[2]
-cluster_addr = ARGV[3]
-DCell.start :id => id, :addr => addr, :directory => {:id => cluster_id, :addr => cluster_addr}
+DCell.start :id => DCELL['id'], :addr => DCELL['addr'], :directory => DCELL['directory'], :registry => DCELL['registry']
 
 class WebTime
   def call(env)
     req = Rack::Request.new(env)
     lang = req.path.gsub('/', '')
-    time = DCell::Global[lang.to_sym]
-    if time.nil?
-      return [404, {'Content-Type' => 'plain/text'}, ['Lang not supported']]
+    actor = nil
+    
+    case lang
+    when 'it'
+      actor = DCell::Global[:orologio]
+    when 'en'
+      actor = DCell::Global[:clock]
+    when 'all'
+      return [200, {'Content-Type' => 'text/plain'}, [DCell::Node.all.inspect]]
+    else
+      return [404, {'Content-Type' => 'text/plain'}, ['Lang not supported']]
     end
 
-    time = time.time
-    [200, {'Content-Type' => 'plain/text'}, ["#{time}"]]
+    [200, {'Content-Type' => 'text/plain'}, ["#{actor.time}"]]
   end
 end

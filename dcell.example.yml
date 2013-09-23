@@ -1,0 +1,9 @@
+id: web
+addr: tcp://10.1.14.116:8000
+directory:
+  id: clock
+  addr: tcp://10.1.14.128:7777
+registry:
+  adapter: redis
+  host: 10.1.14.128
+  port: 6379
