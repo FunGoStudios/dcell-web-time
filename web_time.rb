@@ -1,5 +1,4 @@
 require 'rack'
-require 'dcell'
 
 def usage
   puts 'actor-node <ID> <ADDR> <CLUSTER-ID> <CLUSTER-ADDR>'
@@ -9,6 +8,8 @@ if ARGV.size != 4
   usage
   exit 1
 end
+
+require 'dcell'
 
 id = ARGV[0]
 addr = ARGV[1]
